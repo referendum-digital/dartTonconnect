@@ -4,7 +4,6 @@ import 'package:darttonconnect/models/wallet_app.dart';
 import 'package:darttonconnect/parsers/connect_event.dart';
 import 'package:darttonconnect/parsers/send_transaction.dart';
 import 'package:darttonconnect/provider/bridge_provider.dart';
-import 'package:darttonconnect/storage/default_storage.dart';
 import 'package:darttonconnect/storage/interface.dart';
 import 'package:darttonconnect/wallets_list_manager.dart';
 
@@ -26,12 +25,12 @@ class TonConnect {
   /// Current connected account or None if no account is connected.
   dynamic get account => connected ? wallet!.account : null;
 
-  TonConnect(this._manifestUrl,
-      {IStorage? customStorage,
-      String? walletsListSource,
-      int? walletsListCacheTtl}) {
-    storage = customStorage ?? DefaultStorage();
-
+  TonConnect(
+    this._manifestUrl, {
+    required this.storage,
+    String? walletsListSource,
+    int? walletsListCacheTtl,
+  }) {
     _walletsList = WalletsListManager(
         walletsListSource: walletsListSource, cacheTtl: walletsListCacheTtl);
     provider = null;

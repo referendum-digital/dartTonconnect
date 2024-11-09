@@ -38,8 +38,9 @@ class BridgeProvider extends BaseProvider {
     final sessionCrypto = SessionCrypto();
 
     String bridgeUrl = _wallet?.bridgeUrl ?? '';
-    String universalUrl = _wallet?.universalUrl ?? BridgeProvider.standartUniversalUrl;
-    
+    String universalUrl =
+        _wallet?.universalUrl ?? BridgeProvider.standartUniversalUrl;
+
     _gateway = BridgeGateway(
       _storage,
       bridgeUrl,
@@ -107,7 +108,7 @@ class BridgeProvider extends BaseProvider {
         Future.delayed(const Duration(seconds: disconnectTimeout)),
       ]);
     } catch (e) {
-      logger.e('Provider disconnect', e);
+      logger.e('Provider disconnect', error: e);
     } finally {
       if (!completer.isCompleted) {
         await _removeSession();

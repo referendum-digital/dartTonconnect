@@ -4,7 +4,7 @@ version: 1.0.3
 homepage: https://github.com/romanovichim/dartTonconnect
 
 environment:
-  sdk: '>=2.18.4 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dev_dependencies:
   lints: ^2.0.0
@@ -14,8 +14,7 @@ dependencies:
     sdk: flutter
   crypto: ^3.0.2
   hex: ^0.2.0
-  http: ^0.13.5
-  logger: ^1.3.0
-  pinenacl: ^0.5.1
-  universal_html: ^2.2.1
-  shared_preferences: ^2.1.2
+  http: ^1.2.2
+  logger: ^2.4.0
+  pinenacl: ^0.6.0
+  universal_html: ^2.2.4

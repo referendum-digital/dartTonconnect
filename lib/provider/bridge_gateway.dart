@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart';
-import 'package:universal_html/html.dart';
 
 import 'package:darttonconnect/exceptions.dart';
-import 'package:darttonconnect/logger.dart';
+import 'package:darttonconnect/utils.dart';
 import 'package:darttonconnect/storage/interface.dart';
+import 'package:universal_html/html.dart';
 
 class BridgeGateway {
   static const String ssePath = 'events';
@@ -56,6 +56,7 @@ class BridgeGateway {
 
     _eventSource!.onMessage.listen((event) async {
       try {
+        logger.i("Event in sse arrived $event");
         await _messagesHandler(event);
       } on TimeoutException {
         logger.e('Bridge error -> TimeoutError');

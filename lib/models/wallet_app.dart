@@ -1,11 +1,13 @@
 class WalletApp {
+  final String appName;
   final String name;
-  final String bridgeUrl;
+  final String? bridgeUrl;
   final String image;
   final String? universalUrl;
   final String aboutUrl;
 
   const WalletApp({
+    required this.appName,
     required this.name,
     required this.bridgeUrl,
     required this.image,
@@ -14,15 +16,16 @@ class WalletApp {
   });
 
   factory WalletApp.fromMap(Map<String, dynamic> json) {
-   String bridgeUrl = json.containsKey('bridge_url') ?
-        json['bridge_url'].toString() :
-        (json.containsKey('bridge')
+    String? bridgeUrl = json.containsKey('bridge_url')
+        ? json['bridge_url']
+        : (json.containsKey('bridge')
             ? (json['bridge'] as List).firstWhere(
                 (bridge) => bridge['type'] == 'sse',
-                orElse: () => '')['url'].toString()
-            : '');
+                orElse: () => {'url': null})['url']
+            : null);
 
     return WalletApp(
+      appName: json['app_name'],
       name: json['name'].toString(),
       image: json['image'].toString(),
       bridgeUrl: bridgeUrl,
@@ -31,5 +34,10 @@ class WalletApp {
           ? json['universal_url'].toString()
           : null,
     );
+  }
+
+  @override
+  String toString() {
+    return 'WalletApp{name: $name, bridgeUrl: $bridgeUrl, image: $image, universalUrl: $universalUrl, aboutUrl: $aboutUrl}';
   }
 }

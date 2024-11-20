@@ -8,12 +8,12 @@ import 'package:darttonconnect/provider/bridge_session.dart';
 import 'package:darttonconnect/provider/provider.dart';
 
 import 'package:darttonconnect/exceptions.dart';
-import 'package:darttonconnect/logger.dart';
+import 'package:darttonconnect/utils.dart';
 import 'package:darttonconnect/storage/interface.dart';
 
 class BridgeProvider extends BaseProvider {
   static const int disconnectTimeout = 600;
-  static const String standartUniversalUrl = 'tc://';
+  static const String standardUniversalUrl = 'tc://';
 
   late IStorage _storage;
   WalletApp? _wallet;
@@ -38,8 +38,9 @@ class BridgeProvider extends BaseProvider {
     final sessionCrypto = SessionCrypto();
 
     String bridgeUrl = _wallet?.bridgeUrl ?? '';
-    String universalUrl = _wallet?.universalUrl ?? BridgeProvider.standartUniversalUrl;
-    
+    String universalUrl =
+        _wallet?.universalUrl ?? BridgeProvider.standardUniversalUrl;
+
     _gateway = BridgeGateway(
       _storage,
       bridgeUrl,
@@ -107,7 +108,7 @@ class BridgeProvider extends BaseProvider {
         Future.delayed(const Duration(seconds: disconnectTimeout)),
       ]);
     } catch (e) {
-      logger.e('Provider disconnect', e);
+      logger.e('Provider disconnect', error: e);
     } finally {
       if (!completer.isCompleted) {
         await _removeSession();
@@ -249,13 +250,62 @@ class BridgeProvider extends BaseProvider {
     }
   }
 
-  String _generateUniversalUrl(
-      String universalUrl, Map<String, dynamic> request) {
+  Uri generateRegularUri(String universalURL, Map<String, dynamic> request) {
     const version = 2;
     final sessionId = _session.sessionCrypto.sessionId;
-    final requestSafe = Uri.encodeComponent(jsonEncode(request));
+    final requestSafe = jsonEncode(request);
+    final uri = Uri.parse(universalURL);
+    final queryParameters = {
+      ...uri.queryParameters,
+      'v': "$version",
+      'id': sessionId,
+      'r': requestSafe
+    };
 
-    final url = '$universalUrl?v=$version&id=$sessionId&r=$requestSafe';
+    return uri.replace(queryParameters: queryParameters);
+  }
+
+  String convertToDirectLink({required String universalLink}) {
+    // Parse the universal link into a Uri object
+    Uri uri = Uri.parse(universalLink);
+
+    // Check if the 'attach' query parameter exists
+    if (uri.queryParameters.containsKey('attach')) {
+      final Map<String, String> newQueryParameters =
+          Map.from(uri.queryParameters);
+      newQueryParameters.remove('attach');
+
+      String newPath =
+          uri.path.endsWith('/') ? '${uri.path}start' : '${uri.path}/start';
+
+      // Reconstruct the Uri with updated query parameters and path
+      uri = uri.replace(
+        queryParameters:
+            newQueryParameters.isNotEmpty ? newQueryParameters : null,
+        path: newPath,
+      );
+    }
+
+    // Return the modified Uri as a string
+    return uri.toString();
+  }
+
+  String _generateUniversalUrl(
+      String universalUrl, Map<String, dynamic> request) {
+    Uri newUri;
+    if (isTelegramURL(universalUrl)) {
+      final defaultURL = generateRegularUri(universalUrl, request);
+      final startApp =
+          'tonconnect-${encodeTelegramUrlParameters(defaultURL.query)}';
+      final updatedUniversalUrl =
+          convertToDirectLink(universalLink: universalUrl);
+      newUri = Uri.parse(updatedUniversalUrl)
+          .replace(queryParameters: {'startapp': startApp});
+    } else {
+      newUri = generateRegularUri(universalUrl, request);
+    }
+
+    final url = newUri.toString();
 
     return url;
   }
